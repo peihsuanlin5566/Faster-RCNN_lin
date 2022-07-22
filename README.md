@@ -51,6 +51,7 @@ pip install -r requirements.txt
 
 4. `mv` the `VOCdevkit` folder under `dataset`
 ```
+% mkdir dataset
 % mv -r VOCdevkit  ./dataset/
 
 ```
