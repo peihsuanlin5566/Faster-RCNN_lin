@@ -77,6 +77,12 @@ training a faster R-CNN model (training with PASCAL VOC 2007 data by default) vi
 $ python trainer.py  --batchsize 5  --epochs 20
 ```
 
+if you'd like to accerlate the training, using `--device cuda` flag
+
+```
+$ python trainer.py  --batchsize 5  --epochs 20 --device cuda
+```
+
 the output (trained model, log ...etc.) will bw placed under `./model/exp{$experiment_number}`: 
 ```
 $ ls exp30 
