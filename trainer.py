@@ -70,7 +70,7 @@ def get_args_parser(known=False):
 
 def train(train_dataloader, model, 
             path, model_filename, 
-            lr=0.005, momentum=0.9, weight_decay=0.0005, num_epochs=10, 
+            lr=0.005, momentum=0.9, weight_decay=0.0005, num_epochs=10, device='cpu', 
             test_mode=False): 
 
     """ (3)モデルとパラメータ探索アルゴリズムの設定 """
@@ -244,7 +244,7 @@ if __name__ == "__main__":
             path, 
             model_filename, 
             lr=lr, momentum=momentum, weight_decay=weight_decay, num_epochs=num_epochs, 
-            test_mode=test_mode)
+            test_mode=test_mode, device=device)
     end_time = time.time()
     elapse = end_time-start_time    
     print('training end ')
