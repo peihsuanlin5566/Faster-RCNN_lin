@@ -203,7 +203,13 @@ def dataloader (xml_dir, image_dir, batch_size_train=1, batch_size_val=None, sam
     return train_dataloader, val_dataloader
 
 def load_model_eval(exp_number, weights='train_ALL_VOC2007.cpu.pt', device='cpu'): 
-    model = torch.load('./model/exp{:0>2}/{}'.format(exp_number,weights))
+    # model_filename = './model/exp{:0>2}/{}.{}.pt'.format(exp_number,weights,device)
+    model_filename = glob('./model/exp{:0>2}/*.pt'.format(exp_number))[0]
+    if torch.cuda.is_available():  
+        model = torch.load(model_filename)
+    else: 
+        model = torch.load(model_filename,map_location=torch.device('cpu'))
+
 
     # device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu') 
     device = torch.device(device)    

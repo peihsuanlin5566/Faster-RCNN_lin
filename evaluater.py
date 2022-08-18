@@ -17,7 +17,7 @@ def get_args_parser(known=False):
     # parser.add_argument('--batchsize', default=1, type=int, help='batch size of validation data')
 
     # model, backbone setting
-    parser.add_argument('--weights', default='train_ALL_VOC2007.cpu.pt', help='fine-tuned weights filename. train_ALL_VOC2007.cpu.pt bu default')
+    parser.add_argument('--weights', default='train_ALL_VOC2007', help='fine-tuned weights filename. train_ALL_VOC2007.cpu.pt bu default')
     parser.add_argument('--path', default='./model', help='place for storing the fine-tuned weights') 
     parser.add_argument('--exp', default='1', type=int, help='experiment number', required=True)     
     parser.add_argument('--device', default='cpu', type=str, help='cuda device, i.e. 0 or 0,1,2,3 or cpu')  
