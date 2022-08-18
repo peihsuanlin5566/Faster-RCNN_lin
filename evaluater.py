@@ -82,13 +82,13 @@ def evaluate(val_dataloader, model, plot_result=False, device='cpu'):
         print('now processing image: {}'.format(image_id))
         
         pred[i]   = dict(
-                    boxes=torch.tensor(boxes[indices_keep]), 
-                    scores=torch.tensor(scores[indices_keep]), 
-                    labels=torch.tensor(labels[indices_keep])
+                    boxes=torch.tensor(boxes[indices_keep].astype(float)), 
+                    scores=torch.tensor(scores[indices_keep].astype(float)), 
+                    labels=torch.tensor(labels[indices_keep].astype(float))
                     )
         target_gt[i]  = dict(
-                    boxes=torch.tensor(boxes_gt),
-                    labels=torch.tensor(labels_gt)
+                    boxes=torch.tensor(boxes_gt.astype(float)),
+                    labels=torch.tensor(labels_gt.astype(float))
                     )
 
         if plot_result : 
