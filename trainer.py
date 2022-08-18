@@ -20,7 +20,7 @@ def __create_exp_folder(path, model_filename):
     exp_number_list = np.array([x[-2:] for x in exp_folder_list]).astype(np.int32)
 
     # create a folder for saving the model
-    if exp_number_list.size > 1: 
+    if exp_number_list.size >= 1: 
         exp_number_list.sort()
         exp_number = exp_number_list[-1]+1
         os.mkdir('{}/exp{:0>2}/'.format(path,exp_number))
