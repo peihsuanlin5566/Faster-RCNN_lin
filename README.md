@@ -92,7 +92,7 @@ drwxr-xr-x  12 hayashi  staff        384 Aug 23 19:00 checkpoint
 -rw-r--r--   1 hayashi  staff        216 Aug 23 19:00 var.dat
 ```
 
-- `checkpoint` checkpoint files are placed under this folder
+- `checkpoint` checkpoint files are placed under this folder.
 - `losses.npz` records the losses of every iteration.
 - `train_ALL_VOC2007.{$device}.pt` is the trained model.
 -  `var.dat` records the information of the training. It should be like: 
@@ -117,7 +117,6 @@ Training from the supended session with `--load_checkpoint` flag
 
 ```
 $ python trainer.py  --epoch 1  --load_checkpoint 6 
-
 ```
 
 
@@ -179,7 +178,7 @@ dataset is sampled at:  1/10
 time_elapsed:  16807 sec (~4hr40min)
 ```
 
-(meanings of metrics can be found at https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173 )
+(meanings of the metrics can be found at https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173 )
 
 
 
