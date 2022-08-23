@@ -85,12 +85,14 @@ $ python trainer.py  --batchsize 5  --epochs 20 --device cuda
 
 the output (trained model, log ...etc.) will bw placed under `./model/exp{$experiment_number}`: 
 ```
-$ ls exp30 
--rw-r--r--  1 hayashi  staff      56438 Jul 15 20:23 losses.npz
--rw-r--r--  1 hayashi  staff  166138157 Jul 15 20:23 train_ALL_VOC2007.cpu.pt
--rw-r--r--  1 hayashi  staff        221 Jul 19 16:33 var.dat
+$ ls -l exp30 
+drwxr-xr-x  12 hayashi  staff        384 Aug 23 19:00 checkpoint
+-rw-r--r--   1 hayashi  staff       3094 Aug 23 19:00 losses.npz
+-rw-r--r--   1 hayashi  staff  166143917 Aug 23 19:00 train_ALL_VOC2007.cpu.pt
+-rw-r--r--   1 hayashi  staff        216 Aug 23 19:00 var.dat
 ```
 
+- `checkpoint` checkpoint files are placed under this folder
 - `losses.npz` records the losses of every iteration.
 - `train_ALL_VOC2007.{$device}.pt` is the trained model.
 -  `var.dat` records the information of the training. It should be like: 
@@ -109,6 +111,18 @@ dataset is sampled at: 1/10
 time_elapsed: 37987 sec (~10hr33min)
 
 ```
+
+Training from the supended session with `--load_checkpoint` flag 
+(e.g., make use the checkpoint under `./model/exp06/checkpoint`) : 
+
+```
+$ python trainer.py  --epoch 1  --load_checkpoint 6 
+
+```
+
+
+
+
 
 Use `python trainer.py --help` for more information about the arguments: 
 
