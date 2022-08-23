@@ -13,7 +13,8 @@ def __create_exp_folder(path, model_filename):
             path: parent path, which is specified by the user
 
         output: 
-            exp_number  
+            exp_number: expXX 
+            file_name: {path}/exp{:0>2}/{weight_name(data set)}.{device}.pt
     """
     # experiment number
     exp_folder_list = glob('{}/exp*'.format(path))
@@ -24,9 +25,11 @@ def __create_exp_folder(path, model_filename):
         exp_number_list.sort()
         exp_number = exp_number_list[-1]+1
         os.mkdir('{}/exp{:0>2}/'.format(path,exp_number))
+        os.mkdir('{}/exp{:0>2}/checkpoint/'.format(path,exp_number))
     else: 
         exp_number = 1
         os.mkdir('{}/exp{:0>2}/'.format(path,exp_number))
+        os.mkdir('{}/exp{:0>2}/checkpoint/'.format(path,exp_number))
 
     # output model filename
     file_name = '{}/exp{:0>2}/{}.{}.pt'.format(path, exp_number, model_filename, device)
@@ -34,6 +37,28 @@ def __create_exp_folder(path, model_filename):
 
 
     return exp_number, file_name
+
+
+def __find_checkpoint_file(checkpoint_path): 
+    """ fetch the newest checkpoint file under the specified .model/exp{exp_num} folder
+    input: 
+        checkpoint_path: path for the checkpoint files (e.g., ./model/exp01/checkpoint)
+
+    output: 
+        checkpoint_filename: the checkpoint generated 
+    
+    """
+    if checkpoint_path != '/':
+        checkpoint_path = checkpoint_path + '/'
+        
+    checkpoint_folder_list = glob(checkpoint_path+'*.pt',)
+    checkpoint_number_list = np.sort(np.array([x[-6:-3] for x in checkpoint_folder_list]).astype(np.int32)) 
+    checkpoint_number = checkpoint_number_list[-1]
+
+    checkpoint_filename_found = checkpoint_path+'{:0>3}.pt'.format(checkpoint_number)
+        
+    return checkpoint_number, checkpoint_filename_found
+
 
 def get_args_parser(known=False):
     
@@ -48,6 +73,10 @@ def get_args_parser(known=False):
     parser.add_argument('--sample', default=10, type=int, help='sampling the dataset')
     
     parser.add_argument('--test', default=False, help='sampling the dataset')
+    # load the checkpoint
+    parser.add_argument('--load_checkpoint', 
+        default=0, type=int, help='load the checkpoint file under ./model/expXX/checkpoint/. Specify the XX here')
+
 
 
     # model, backbone setting
@@ -71,24 +100,59 @@ def get_args_parser(known=False):
 def train(train_dataloader, model, 
             path, model_filename, 
             lr=0.005, momentum=0.9, weight_decay=0.0005, num_epochs=10, device='cpu', 
-            test_mode=False): 
+            test_mode=False, load_checkpoint=None): 
+
 
     """ (3)モデルとパラメータ探索アルゴリズムの設定 """
     params      = [p for p in model.parameters() if p.requires_grad] 
     optimizer   = torch.optim.SGD(params, lr=lr, momentum=momentum, weight_decay=weight_decay) # パラメータ探索アルゴリズム
     print('Model training on {}'.format(device))
 
+
     """ (4)モデル学習 """
+
     # epoch number
+    epoch0 = 0
     num_epochs = num_epochs
+
+    # array for storing loss
+    losses_array = np.array([])
+
+    if load_checkpoint != None:
+        # if loading the checkpoint file, applying the 1. epoch, 2. optimizer, 3. loss
+        # and the output file would be placed at the same folder
+        checkpoint_path = '{}/exp{:0>2}/checkpoint/'.format(path, load_checkpoint)
+        print('load the checkpoint file under {}'.format(checkpoint_path))
+        checkpoint_num, checkpoint_filename_found = __find_checkpoint_file(checkpoint_path)
+
+        checkpoint = torch.load(checkpoint_filename_found)
+
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch0 = checkpoint['epoch']
+        loss0 = checkpoint['loss']
+        losses_array = np.append(loss0, losses_array)
+
+        exp_number = load_checkpoint
+        file_name = '{}/exp{:0>2}/{}.{}.pt'.format(path, exp_number, model_filename, device)
+        
+
+    else: 
+        # derive the filename for saving the output model
+        exp_number, file_name  = __create_exp_folder(path, model_filename)
+        checkpoint_num = 0
+
+
+
 
     # turn into the training mode 
     model.train()
 
-    losses_array = np.array([])
-    for epoch in range(num_epochs):
+    
+    iter = 0
+    for epoch in range(epoch0, num_epochs):
         for i, batch in enumerate(train_dataloader):
-            
+            iter += 1
+
             images, targets, image_ids = batch 
             
             images = list(image.to(device) for image in images)
@@ -101,6 +165,7 @@ def train(train_dataloader, model,
 
             except ValueError:
                 print(image_ids)
+
                 pass
             else:
                 losses = sum(loss for loss in loss_dict.values())
@@ -112,11 +177,22 @@ def train(train_dataloader, model,
                 optimizer.step()
         
                 if (i+1) % 50== 0:
-                    print(f"epoch #{epoch+1} Iteration #{i+1} loss: {loss_value}") 
+                    print(f"epoch #{epoch+1} batch #{i+1} iteration #{iter} loss: {loss_value}") 
+                
+                # save the general check point 
+                if (iter) % 50 == 0: 
+                    checkpoint_num += 1
+                    checkpoint_name = '{}/exp{:0>2}/checkpoint/{:0>3}.pt'.format(path, exp_number, checkpoint_num)
+                    torch.save({'epoch': epoch+1,  
+                                'model_state_dict': model.state_dict(), 
+                                'optimizer_state_dict': optimizer.state_dict(),
+                                'loss': loss_value,  }, checkpoint_name)
+                    print('save the checkpoint: {}'.format(checkpoint_name))
+
+                
     
 
     # save the trained model
-    exp_number, file_name  = __create_exp_folder(path, model_filename)
     torch.save(model, file_name)
     np.savez( '{}/exp{:0>2}/losses.npz'.format(path, exp_number), losses_array=losses_array)
     return  exp_number
@@ -214,16 +290,13 @@ if __name__ == "__main__":
     print(label_path)
     train_dataloader = load_data_train(label_path, data_path, batchsize, sample=sample)  
 
-
-    """ load the mask faster RCNN model """
     # get args
+    """ load the mask faster RCNN model """
     device      = args.device
     model_name  = args.model
     backbone    = args.backbone
-    # load model
-    model       = load_model_train(device=device)
-
-
+    model = load_model_train(device=device)
+    
     """ training process """
     # get args
     path            = args.path 
@@ -239,12 +312,29 @@ if __name__ == "__main__":
 
     print('start training')
     start_time = time.time()
-    exp_number = train(train_dataloader, 
-            model, 
-            path, 
-            model_filename, 
-            lr=lr, momentum=momentum, weight_decay=weight_decay, num_epochs=num_epochs, 
-            test_mode=test_mode, device=device)
+
+    
+
+    """ load the checkpoint if being specified """
+    load_checkpoint = args.load_checkpoint
+    if load_checkpoint != 0: 
+        exp_number = train(train_dataloader, 
+                model, 
+                path, 
+                model_filename, 
+                lr=lr, momentum=momentum, weight_decay=weight_decay, num_epochs=num_epochs, 
+                test_mode=test_mode, device=device,load_checkpoint=load_checkpoint )
+
+    else: 
+        exp_number = train(train_dataloader, 
+        model, 
+        path, 
+        model_filename, 
+        lr=lr, momentum=momentum, weight_decay=weight_decay, num_epochs=num_epochs, 
+        test_mode=test_mode, device=device, )
+
+
+
     end_time = time.time()
     elapse = end_time-start_time    
     print('training end ')
