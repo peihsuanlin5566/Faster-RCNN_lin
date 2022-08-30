@@ -169,3 +169,6 @@ detect/
 dataset/
 category_VOC2007.dat
 *.ipynb
+
+# vi caches
+*.swp
