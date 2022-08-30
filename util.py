@@ -33,6 +33,8 @@ def find_class(xml_dir):
     class_name = []
 
     xml_files = glob(xml_dir+'/*.xml')
+    file_num = np.array([np.int64(x[-10:-4]) for x in xml_files ])
+    xml_files = np.array(xml_files)[np.argsort(file_num)]
     for xml_file in xml_files: 
         xml = ET.parse(xml_file)
         for i in xml.iter('object'): 
@@ -135,7 +137,7 @@ def dataloader (xml_dir, image_dir, batch_size_train=1, batch_size_val=None, sam
     
     """ generate two data, split it into two datasets, create batches
         input: 
-            xml_paths: path for placing annotations  
+            xml_dir: path for placing annotations  
             image_dir: path for placing images 
             
         output: 
@@ -208,7 +210,7 @@ def load_model_eval(exp_number, weights='train_ALL_VOC2007.cpu.pt', device='cpu'
     if torch.cuda.is_available():  
         model = torch.load(model_filename)
     else: 
-        model = torch.load(model_filename,map_location=torch.device('cpu'))
+        model = torch.load(model_filename, map_location=torch.device('cpu'))
 
 
     # device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu') 
