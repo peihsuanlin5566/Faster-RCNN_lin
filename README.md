@@ -14,7 +14,7 @@ $ git clone https://github.com/peihsuanlin5566/Faster-RCNN_lin
 # cd into the folder
 $ cd Faster-RCNN_lin 
 
-# build a venv  
+# build a venv, actining the venv
 $ python3 -m venv venv 
 $ source venv/bin/activate
 
