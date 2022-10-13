@@ -8,6 +8,11 @@ This code is written based on the Faster R-CNN tutorial provided by pytorch (htt
 ## Environment  
 
 ```
+# clone the repository 
+$ git clone https://github.com/peihsuanlin5566/Faster-RCNN_lin 
+$ cd Faster-RCNN_lin 
+
+
 # build a venv  
 $ python3 -m venv venv 
 $ source venv/bin/activate
