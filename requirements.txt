@@ -1,5 +1,5 @@
 numpy
-matplotlib==3.3.4
+matplotlib
 opencv-python==4.5.5.64
 PyYAML==5.4.1
 pandas
